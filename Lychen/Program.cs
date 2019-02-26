@@ -210,6 +210,8 @@ namespace Lychen
             v8.AddHostObject("CSClr", new HostTypeCollection("mscorlib", "System", "System.Core"));
 
             v8.AddHostObject("CSSettings", Settings);
+
+            v8.AddHostType("CSLychen", typeof(Program)); // Experimental. No idea if useful or dangerous.
         }
     }
 }
