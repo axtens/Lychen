@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.ClearScript.JavaScript;
 using Microsoft.ClearScript;
 using Microsoft.ClearScript.V8;
+using System.Data;
 
 namespace Lychen
 {
@@ -207,7 +208,7 @@ namespace Lychen
 
             v8.AddHostObject("CSX", new ExtendedHostFunctions());
             v8.AddHostObject("CS", new HostFunctions());
-            v8.AddHostObject("CSClr", new HostTypeCollection("mscorlib", "System", "System.Core"));
+            v8.AddHostObject("CSClr", new HostTypeCollection("mscorlib", "System", "System.Core", "System.Data"));
 
             v8.AddHostObject("CSSettings", Settings);
 

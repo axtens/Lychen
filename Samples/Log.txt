@@ -1,0 +1,4 @@
+2019-02-27T10:36:57.7929748+10:00	INFO	9984	Lychen>Detail	Config: C:\web\Detail.cfg
+2019-02-27T10:37:11.0341224+10:00	INFO	9984	Lychen>Detail>PidInsert	EXEC PidInsert @ProcessStartDateTimeString = '2019-02-27 10:37:00.012', @PIDValue = 9984, @PIDType = 12
+2019-02-27T10:37:54.4874297+10:00	INFO	9984	Lychen>Detail>Detail>GetList	{[1,2,3,4,5,6]}
+2019-02-27T10:38:24.1065252+10:00	INFO	9984	Lychen>Detail>Detail>ProcessHits>ProcessMarshalledHit>SelectCompany	SelectCompany Success 16 19 
