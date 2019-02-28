@@ -149,7 +149,19 @@ namespace Lychen
                 if (CSFile.Exists(fn)) {
                     $SYM$.Evaluate(CSFile.ReadAllText(fn));
                 } else {
-                    throw 'File not found.';
+                    throw fn + ' not found.';
+                }
+            }
+            function include_once(fn) {
+                if (CSFile.Exists(fn)) {
+                    if (!CSSettings.ContainsKey('included_' + fn)) {
+                        $SYM$.Evaluate(CSFile.ReadAllText(fn));
+                        CSSettings.Add('included_' + fn, true);
+                    } else {
+                        throw fn + ' already included.';
+                    }
+                } else {
+                    throw fn + ' not found.';
                 }
             }".Replace("$SYM$", obfusc);
 
