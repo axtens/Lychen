@@ -8,6 +8,9 @@ using Microsoft.ClearScript.JavaScript;
 using Microsoft.ClearScript;
 using Microsoft.ClearScript.V8;
 using System.Data;
+using Flurl;
+using Flurl.Http;
+using Flurl.Util;
 
 namespace Lychen
 {
@@ -205,6 +208,22 @@ namespace Lychen
 
         private static void LoadGlobalFunctions()
         {
+            AddSystemSymbols(ref v8);
+            AddInternalSymbols(ref v8);
+            AddHostSymbols(ref v8);
+            AddFlurlSymbols(ref v8);
+        }
+
+        private static void AddInternalSymbols(ref V8ScriptEngine v8)
+        {
+            v8.AddHostType("CSINI", typeof(INI));
+            v8.AddHostType("CSKeyGenerator", typeof(KeyGenerator));
+            v8.AddHostObject("CSSettings", Settings);
+            v8.AddHostType("CSLychen", typeof(Program)); // Experimental. No idea if useful or dangerous.
+        }
+
+        private static void AddSystemSymbols(ref V8ScriptEngine v8)
+        {
             v8.AddHostType("CSFile", typeof(System.IO.File));
             v8.AddHostType("CSConsole", typeof(System.Console));
             v8.AddHostType("CSPath", typeof(System.IO.Path));
@@ -214,20 +233,30 @@ namespace Lychen
             v8.AddHostType("CSString", typeof(System.String));
             v8.AddHostType("CSDateTime", typeof(System.DateTime));
             v8.AddHostType("CSDebugger", typeof(System.Diagnostics.Debugger));
+        }
 
-            v8.AddHostType("CSINI", typeof(INI));
-            v8.AddHostType("CSKeyGenerator", typeof(KeyGenerator));
-
+        private static void AddHostSymbols(ref V8ScriptEngine v8)
+        {
             v8.AddHostObject("CSX", new ExtendedHostFunctions());
             v8.AddHostObject("CS", new HostFunctions());
-            v8.AddHostObject("CSClr", new HostTypeCollection("mscorlib", 
-                "System", 
-                "System.Core", 
+            v8.AddHostObject("CSClr", new HostTypeCollection("mscorlib",
+                "System",
+                "System.Core",
                 "System.Data"));
+        }
 
-            v8.AddHostObject("CSSettings", Settings);
-
-            v8.AddHostType("CSLychen", typeof(Program)); // Experimental. No idea if useful or dangerous.
+        private static void AddFlurlSymbols(ref V8ScriptEngine v8)
+        {
+            v8.AddHostType("CSFlurlClient", typeof(FlurlClient));
+            v8.AddHostType("CSFlurlRequest", typeof(FlurlRequest));
+            v8.AddHostType("CSFlurlHttp", typeof(FlurlHttp));
+            v8.AddHostType("CSFlurlHttpException", typeof(FlurlHttpException));
+            v8.AddHostType("CSFlurlParsingException", typeof(FlurlParsingException));
+            v8.AddHostType("CSFlurlHttpTimeoutException", typeof(FlurlHttpTimeoutException));
+            v8.AddHostType("CSFlurlQueryParamCollection", typeof(Flurl.QueryParamCollection));
+            v8.AddHostType("CSFlurlQueryParameter", typeof(Flurl.QueryParameter));
+            v8.AddHostType("CSFlurlStringExtensions", typeof(Flurl.StringExtensions));
+            v8.AddHostType("CSFlurlUrl", typeof(Flurl.Url));
         }
     }
 }
