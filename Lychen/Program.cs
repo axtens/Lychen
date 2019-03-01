@@ -220,7 +220,10 @@ namespace Lychen
 
             v8.AddHostObject("CSX", new ExtendedHostFunctions());
             v8.AddHostObject("CS", new HostFunctions());
-            v8.AddHostObject("CSClr", new HostTypeCollection("mscorlib", "System", "System.Core", "System.Data"));
+            v8.AddHostObject("CSClr", new HostTypeCollection("mscorlib", 
+                "System", 
+                "System.Core", 
+                "System.Data"));
 
             v8.AddHostObject("CSSettings", Settings);
 
