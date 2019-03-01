@@ -19,7 +19,7 @@ namespace Lychen
 
         static int Main(string[] args)
         {
-            ParseArgsToSettings(args);
+            LoadSettingsDictionary(args);
 
             var V8Setup = V8ScriptEngineFlags.EnableDebugging |
                 V8ScriptEngineFlags.EnableRemoteDebugging |
@@ -99,7 +99,7 @@ namespace Lychen
             var cmd = string.Empty;
             do
             {
-                Console.Write(">");
+                Console.Write(Settings["$PROMPT"]);
                 cmd = Console.ReadLine();
                 if (cmd == "bye")
                 {
@@ -175,7 +175,7 @@ namespace Lychen
             v8.AddHostObject("CSScriptINI", ini);
         }
 
-        private static void ParseArgsToSettings(string[] args)
+        private static void LoadSettingsDictionary(string[] args)
         {
             var argv = new List<string>();
             var cnt = 0;
@@ -202,6 +202,8 @@ namespace Lychen
             }
             Settings["$ARGC"] = cnt;
             Settings["$ARGV"] = argv.ToArray<string>();
+
+            Settings["$PROMPT"] = "Lychen>";
         }
 
         private static void AddSymbols()
@@ -238,6 +240,9 @@ namespace Lychen
             v8.AddHostType("CSRestSharpRestResponseBase", typeof(RestResponseBase));
             v8.AddHostType("CSRestSharpRestResponseCookie", typeof(RestResponseCookie));
             v8.AddHostType("CSRestSharpXmlParameter", typeof(XmlParameter));
+            v8.AddHostType("CSRestSharpHttpBasicAuthenticator", typeof(RestSharp.Authenticators.HttpBasicAuthenticator));
+            v8.AddHostType("CSRestSharpSimpleAuthenticator", typeof(RestSharp.Authenticators.SimpleAuthenticator));
+
         }
 
         private static void AddInternalSymbols(ref V8ScriptEngine v8)
