@@ -7,11 +7,14 @@ if (CSSettings("$ARGC") <= 1) {
   CSEnvironment.Exit(1);
 }
 
+var includePattern = /\.dll$|\.pdb$|\.config$|\.exe$/i;
+var excludePattern = /vshost/i;
+
 var list = CSDirectory.GetFiles(".\\", "*.*");
 var shortList = [];
 for (var i = 0; i < list.Length; i++) {
-  if (list[i].match(/\.dll$|\.exe$|\.pdb$|\.config$/i) !== null) {
-    if (list[i].match(/vshost/i) === null) {
+  if (includePattern.test(list[i])) {
+    if (!excludePattern.test(list[i])) {
       shortList.push(list[i])
     }
   }
