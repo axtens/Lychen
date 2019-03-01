@@ -4,7 +4,7 @@ if (!CSSettings.ContainsKey("$ARG2")) {
 }
 
 var ifile = CSSettings("$ARG2");
-var ofile = CSPath.ChangeExtension(ifile,".json");
+var ofile = CSPath.ChangeExtension(ifile, ".json");
 
 var recs = [];
 var data = CSFile.ReadAllText(ifile).split(/\r\n|\r|\n/g);

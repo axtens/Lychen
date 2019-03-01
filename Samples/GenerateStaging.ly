@@ -3,8 +3,8 @@ if (CSSettings.ContainsKey("/D")) {
 }
 
 if (CSSettings("$ARGC") <= 1) {
-	CSConsole.WriteLine("Please specify staging directory");
-	CSEnvironment.Exit(1);
+  CSConsole.WriteLine("Please specify staging directory");
+  CSEnvironment.Exit(1);
 }
 
 var list = CSDirectory.GetFiles(".\\", "*.*");
@@ -23,11 +23,11 @@ CSFile.WriteAllText(stagingINI, "");
 var ini = new CSINI(stagingINI);
 
 
-ini.IniWriteValue("Settings","Destination",CSSettings("$ARG2"));
-ini.IniWriteValue("Settings","Count",String(shortList.length));
+ini.IniWriteValue("Settings", "Destination", CSSettings("$ARG2"));
+ini.IniWriteValue("Settings", "Count", String(shortList.length));
 
 for (i = 0; i < shortList.length; i++) {
-	ini.IniWriteValue("Item." + String(i+1), "Name", shortList[i]);
+  ini.IniWriteValue("Item." + String(i + 1), "Name", shortList[i]);
 }
 
 CSConsole.WriteLine(shortList.length + " items recorded");

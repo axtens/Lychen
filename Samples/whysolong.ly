@@ -16,7 +16,7 @@ for (var i = 0; i < (data.length - 1); i++) {
   var line = data[i].split("\t");
   var linep = data[i + 1].split("\t");
   var date,
-  datep;
+    datep;
   try {
     date = CSClr.System.Convert.ToDateTime(line[0]);
   } catch (E) {
