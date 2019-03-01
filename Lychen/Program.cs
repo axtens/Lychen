@@ -8,9 +8,7 @@ using Microsoft.ClearScript.JavaScript;
 using Microsoft.ClearScript;
 using Microsoft.ClearScript.V8;
 using System.Data;
-using Flurl;
-using Flurl.Http;
-using Flurl.Util;
+using RestSharp;
 
 namespace Lychen
 {
@@ -208,10 +206,16 @@ namespace Lychen
 
         private static void LoadGlobalFunctions()
         {
-            AddSystemSymbols(ref v8);
             AddInternalSymbols(ref v8);
             AddHostSymbols(ref v8);
-            AddFlurlSymbols(ref v8);
+            AddSystemSymbols(ref v8);
+            AddRestSharpSymbols(ref v8);
+        }
+
+        private static void AddRestSharpSymbols(ref V8ScriptEngine v8)
+        {
+            v8.AddHostType("CSRestClient", typeof(RestSharp.RestClient));
+
         }
 
         private static void AddInternalSymbols(ref V8ScriptEngine v8)
@@ -243,20 +247,6 @@ namespace Lychen
                 "System",
                 "System.Core",
                 "System.Data"));
-        }
-
-        private static void AddFlurlSymbols(ref V8ScriptEngine v8)
-        {
-            v8.AddHostType("CSFlurlClient", typeof(FlurlClient));
-            v8.AddHostType("CSFlurlRequest", typeof(FlurlRequest));
-            v8.AddHostType("CSFlurlHttp", typeof(FlurlHttp));
-            v8.AddHostType("CSFlurlHttpException", typeof(FlurlHttpException));
-            v8.AddHostType("CSFlurlParsingException", typeof(FlurlParsingException));
-            v8.AddHostType("CSFlurlHttpTimeoutException", typeof(FlurlHttpTimeoutException));
-            v8.AddHostType("CSFlurlQueryParamCollection", typeof(Flurl.QueryParamCollection));
-            v8.AddHostType("CSFlurlQueryParameter", typeof(Flurl.QueryParameter));
-            v8.AddHostType("CSFlurlStringExtensions", typeof(Flurl.StringExtensions));
-            v8.AddHostType("CSFlurlUrl", typeof(Flurl.Url));
         }
     }
 }
