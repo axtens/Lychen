@@ -53,7 +53,7 @@ namespace Lychen
 
             if ((int)Settings["$ARGC"] > 0)
             {
-                script = Settings["$ARG1"].ToString();
+                script = Settings["$ARG0"].ToString();
                 if (!File.Exists(script))
                 {
                     Console.WriteLine($"Script {script} not found.");
@@ -195,7 +195,7 @@ namespace Lychen
                 }
                 else
                 {
-                    Settings[$"$ARG{cnt + 1}"] = arg;
+                    Settings[$"$ARG{cnt}"] = arg;
                     cnt += 1;
                     argv.Add(arg);
                 }

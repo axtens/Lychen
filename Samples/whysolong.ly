@@ -1,15 +1,17 @@
+debugger;
+
 if (CSSettings("$ARGC") < 2) {
-  CSConsole.WriteLine("{0} logfile", CSSettings("$ARG1"));
+  CSConsole.WriteLine("{0} logfile", CSSettings("$ARG0"));
   CSEnvironment.Exit(1);
 }
 
 debugger;
 
-if (CSSettings.ContainsKey("/" + CSPath.GetFileNameWithoutExtension(CSSettings("$ARG1")))) {
+if (CSSettings.ContainsKey("/" + CSPath.GetFileNameWithoutExtension(CSSettings("$ARG0")))) {
   debugger;
 }
 
-var logfile = CSSettings("$ARG2");
+var logfile = CSSettings("$ARG1");
 
 var data = CSFile.ReadAllText(logfile).split(/\r\n/g);
 for (var i = 0; i < (data.length - 1); i++) {

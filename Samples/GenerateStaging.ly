@@ -2,7 +2,7 @@ if (CSSettings.ContainsKey("/D")) {
   debugger;
 }
 
-if (CSSettings("$ARGC") <= 1) {
+if (CSSettings("$ARGC") < 2) {
   CSConsole.WriteLine("Please specify staging directory");
   CSEnvironment.Exit(1);
 }
@@ -24,7 +24,6 @@ var stagingINI = CSPath.GetFullPath("Staging.INI");
 CSFile.WriteAllText(stagingINI, "");
 
 var ini = new CSINI(stagingINI);
-
 
 ini.IniWriteValue("Settings", "Destination", CSSettings("$ARG2"));
 ini.IniWriteValue("Settings", "Count", String(shortList.length));

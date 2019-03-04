@@ -1,9 +1,9 @@
-if (!CSSettings.ContainsKey("$ARG2")) {
-	CSConsole.WriteLine("Syntax:\n\t{0} filename.ext\n\nOutputs filename.json", CSSettings("$ARG1"));
+if (!CSSettings.ContainsKey("$ARG1")) {
+	CSConsole.WriteLine("Syntax:\n\t{0} filename.ext\n\nOutputs filename.json", CSSettings("$ARG0"));
 	CSEnvironment.Exit(1);
 }
 
-var ifile = CSSettings("$ARG2");
+var ifile = CSSettings("$ARG1");
 var ofile = CSPath.ChangeExtension(ifile, ".json");
 
 var recs = [];
