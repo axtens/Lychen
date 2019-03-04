@@ -68,7 +68,7 @@ namespace Lychen
                     Console.WriteLine("No script.");
                     return 1;
                 }
-                ConnectToScriptLIN("repl.lin"); // FIXME. Put this somewhere useful
+                ConnectToScriptLIN("repl.INI"); // FIXME. Put this somewhere useful
             }
 
             SetupIncludeFunction();
@@ -171,7 +171,7 @@ namespace Lychen
 
         private static void ConnectToScriptLIN(string script)
         {
-            var ini = new INI(Path.ChangeExtension(script, ".LIN"));
+            var ini = new INI(Path.ChangeExtension(script, ".INI"));
             v8.AddHostObject("CSScriptINI", ini);
         }
 
@@ -179,10 +179,12 @@ namespace Lychen
         {
             var argv = new List<string>();
             var cnt = 0;
+            var slashCnt = 0;
             foreach (var arg in args)
             {
                 if (arg.StartsWith("/"))
                 {
+                    slashCnt++;
                     if (arg.Contains(":") || arg.Contains("="))
                     {
                         var lhs = arg.Split(new char[] { ':', '=' }, 2);
@@ -202,7 +204,7 @@ namespace Lychen
             }
             Settings["$ARGC"] = cnt;
             Settings["$ARGV"] = argv.ToArray<string>();
-
+            Settings["/COUNT"] = slashCnt;
             Settings["$PROMPT"] = "Lychen>";
         }
 
@@ -227,7 +229,7 @@ namespace Lychen
             v8.AddHostType("CSRestSharpHttpResponse", typeof(HttpResponse));
             v8.AddHostType("CSRestSharpMethod", typeof(Method));
             v8.AddHostType("CSRestSharpNameValuePair", typeof(NameValuePair));
-            v8.AddHostType("CSRestSharpParameter", typeof(Parameter));
+            v8.AddHostType("CSRestSharpParameter", typeof(RestSharp.Parameter));
             v8.AddHostType("CSRestSharpParameterType", typeof(ParameterType));
             v8.AddHostType("CSRestSharpPocoJsonSerializerStrategy", typeof(PocoJsonSerializerStrategy));
             v8.AddHostType("CSRestSharpResponseStatus", typeof(ResponseStatus));
