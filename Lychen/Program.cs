@@ -59,7 +59,7 @@ namespace Lychen
                     Console.WriteLine($"Script {script} not found.");
                     return 2;
                 }
-                ConnectToScriptLIN(script);
+                ConnectoToScriptINI(script);
             }
             else
             {
@@ -68,7 +68,7 @@ namespace Lychen
                     Console.WriteLine("No script.");
                     return 1;
                 }
-                ConnectToScriptLIN("repl.INI"); // FIXME. Put this somewhere useful
+                ConnectoToScriptINI("repl.INI"); // FIXME. Put this somewhere useful
             }
 
             SetupIncludeFunction();
@@ -78,7 +78,18 @@ namespace Lychen
             if (script != string.Empty)
             {
                 var context = v8.Compile(File.ReadAllText(script));
-                evaluand = v8.Evaluate(context);
+                try
+                {
+                    evaluand = v8.Evaluate(context);
+                }
+                catch (Exception exception)
+                {
+                    var scriptException = exception as IScriptEngineException;
+                    if (scriptException != null)
+                    {
+                        Console.WriteLine(scriptException.ErrorDetails);
+                    }
+                }
                 if (evaluand.GetType() != typeof(Microsoft.ClearScript.VoidResult))
                 {
                     Console.WriteLine($"{evaluand}");
@@ -117,7 +128,7 @@ namespace Lychen
                 catch (ScriptEngineException see)
                 {
                     evaluand = "";
-                    Console.WriteLine(see.Message);
+                    Console.WriteLine(see.ErrorDetails);
                 }
                 catch (NullReferenceException nre)
                 {
@@ -169,7 +180,7 @@ namespace Lychen
             v8.Evaluate(includeCode);
         }
 
-        private static void ConnectToScriptLIN(string script)
+        private static void ConnectoToScriptINI(string script)
         {
             var ini = new INI(Path.ChangeExtension(script, ".INI"));
             v8.AddHostObject("CSScriptINI", ini);
