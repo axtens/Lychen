@@ -213,38 +213,6 @@ namespace Lychen
             AddInternalSymbols(ref v8);
             AddHostSymbols(ref v8);
             AddSystemSymbols(ref v8);
-            AddRestSharpSymbols(ref v8);
-        }
-
-        private static void AddRestSharpSymbols(ref V8ScriptEngine v8)
-        {
-            v8.AddHostType("CSRestSharpDataFormat", typeof(DataFormat));
-            v8.AddHostType("CSRestSharpDateFormat", typeof(DateFormat));
-            v8.AddHostType("CSRestSharpFileParameter", typeof(FileParameter));
-            v8.AddHostType("CSRestSharpHttp", typeof(Http));
-            v8.AddHostType("CSRestSharpHttpCookie", typeof(HttpCookie));
-            v8.AddHostType("CSRestSharpHttpFile", typeof(HttpFile));
-            v8.AddHostType("CSRestSharpHttpHeader", typeof(HttpHeader));
-            v8.AddHostType("CSRestSharpHttpParameter", typeof(HttpParameter));
-            v8.AddHostType("CSRestSharpHttpResponse", typeof(HttpResponse));
-            v8.AddHostType("CSRestSharpMethod", typeof(Method));
-            v8.AddHostType("CSRestSharpNameValuePair", typeof(NameValuePair));
-            v8.AddHostType("CSRestSharpParameter", typeof(RestSharp.Parameter));
-            v8.AddHostType("CSRestSharpParameterType", typeof(ParameterType));
-            v8.AddHostType("CSRestSharpPocoJsonSerializerStrategy", typeof(PocoJsonSerializerStrategy));
-            v8.AddHostType("CSRestSharpResponseStatus", typeof(ResponseStatus));
-            v8.AddHostType("CSRestSharpRestClient", typeof(RestClient));
-            v8.AddHostType("CSRestSharpRestClientExtensions", typeof(RestClientExtensions));
-            v8.AddHostType("CSRestSharpRestRequest", typeof(RestRequest));
-            //v8.AddHostType("CSRestSharpRestRequestAsyncHandle", typeof(RestRequestAsyncHandle));
-            //v8.AddHostType("CSRestSharpRestRequestExtensions", typeof(RestRequestExtensions));
-            v8.AddHostType("CSRestSharpRestResponse", typeof(RestResponse));
-            v8.AddHostType("CSRestSharpRestResponseBase", typeof(RestResponseBase));
-            v8.AddHostType("CSRestSharpRestResponseCookie", typeof(RestResponseCookie));
-            v8.AddHostType("CSRestSharpXmlParameter", typeof(XmlParameter));
-            v8.AddHostType("CSRestSharpHttpBasicAuthenticator", typeof(RestSharp.Authenticators.HttpBasicAuthenticator));
-            v8.AddHostType("CSRestSharpSimpleAuthenticator", typeof(RestSharp.Authenticators.SimpleAuthenticator));
-
         }
 
         private static void AddInternalSymbols(ref V8ScriptEngine v8)
@@ -275,7 +243,8 @@ namespace Lychen
             v8.AddHostObject("CSClr", new HostTypeCollection("mscorlib",
                 "System",
                 "System.Core",
-                "System.Data"));
+                "System.Data",
+                "RestSharp"));
         }
     }
 }
