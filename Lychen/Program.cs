@@ -140,6 +140,11 @@ namespace Lychen
                     evaluand = "";
                     Console.WriteLine(e.Message);
                 }
+                if (evaluand == null)
+                {
+                    evaluand = "(null)";
+                }
+
                 if (evaluand.GetType() != typeof(Microsoft.ClearScript.VoidResult))
                 {
                     Console.WriteLine($"{evaluand}");
@@ -148,6 +153,7 @@ namespace Lychen
                         File.AppendAllText(fileName, $"// {evaluand}\r\n");
                     }
                 }
+
             } while (cmd != "bye");
         }
 
@@ -232,6 +238,7 @@ namespace Lychen
             v8.AddHostType("CSKeyGenerator", typeof(KeyGenerator));
             v8.AddHostObject("CSSettings", Settings);
             v8.AddHostType("CSLychen", typeof(Program)); // Experimental. No idea if useful or dangerous.
+            v8.AddHostType("CSReflection", typeof(Reflection));
         }
 
         private static void AddSystemSymbols(ref V8ScriptEngine v8)
