@@ -5,7 +5,7 @@ if (CSSettings("/COUNT") === 0 || !CSSettings.ContainsKey("/T") || !CSSettings.C
   CSEnvironment.Exit(1);
 }
 
-var mail = CSClr.System.Net.Mail;
+var mail = CS.System.Net.Mail;
 var message = new mail.MailMessage();
 
 message.From = new mail.MailAddress(
@@ -27,7 +27,7 @@ if (CSFile.Exists(CSSettings("/A"))) {
   message.Attachments.Add(att);
 }
 
-var cred = new CSClr.System.Net.NetworkCredential(
+var cred = new CS.System.Net.NetworkCredential(
     CSScriptINI.IniReadValue("Settings", "Account", ""),
     CSScriptINI.IniReadValue("Settings", "Password", ""));
 	

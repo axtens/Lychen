@@ -249,9 +249,9 @@ namespace Lychen
 
         private static void AddHostSymbols(ref V8ScriptEngine v8)
         {
-            v8.AddHostObject("CSX", new ExtendedHostFunctions());
-            v8.AddHostObject("CS", new HostFunctions());
-            v8.AddHostObject("CSClr", new HostTypeCollection("mscorlib",
+            v8.AddHostObject("CSExtendedHost", new ExtendedHostFunctions());
+            v8.AddHostObject("CSHost", new HostFunctions());
+            v8.AddHostObject("CS", new HostTypeCollection("mscorlib",
                 "System",
                 "System.Core",
                 "System.Data",

@@ -1,11 +1,7 @@
-debugger;
-
 if (CSSettings("$ARGC") < 2) {
   CSConsole.WriteLine("{0} logfile", CSSettings("$ARG0"));
   CSEnvironment.Exit(1);
 }
-
-debugger;
 
 if (CSSettings.ContainsKey("/" + CSPath.GetFileNameWithoutExtension(CSSettings("$ARG0")))) {
   debugger;
@@ -20,17 +16,17 @@ for (var i = 0; i < (data.length - 1); i++) {
   var date,
     datep;
   try {
-    date = CSClr.System.Convert.ToDateTime(line[0]);
+    date = CS.System.Convert.ToDateTime(line[0]);
   } catch (E) {
     continue;
   }
   try {
-    datep = CSClr.System.Convert.ToDateTime(linep[0]);
+    datep = CS.System.Convert.ToDateTime(linep[0]);
   } catch (E) {
     continue;
   }
   var span = datep.Subtract(date);
-  var comp = CSClr.System.DateTime.Compare(date, datep);
+  var comp = CS.System.DateTime.Compare(date, datep);
   if (comp !== 0) {
     CSConsole.WriteLine("{0}\t{1}\t{2}", span.TotalMinutes, linep[3], linep[4]);
   }
