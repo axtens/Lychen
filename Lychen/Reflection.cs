@@ -5,11 +5,29 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Reflection;
 using System.Diagnostics;
+using System.Runtime.Remoting;
 
 namespace Lychen
 {
     public static class Reflection
     {
+        public static Assembly AssemblyByName(string symbol)
+        {
+            if (Program.Settings.ContainsKey("/" + MethodBase.GetCurrentMethod().Name))
+            {
+                Debugger.Launch();
+            }
+            return Assembly.Load(symbol);
+        }
+        public static Assembly AssemblyByPath(string path)
+        {
+            if (Program.Settings.ContainsKey("/" + MethodBase.GetCurrentMethod().Name))
+            {
+                Debugger.Launch();
+            }
+            return Assembly.LoadFrom(path);
+        }
+
         public static object InvokeInstance(string dll, string namespace_class, string method_name, params object[] arguments)
         {
             if (Program.Settings.ContainsKey("/" + MethodBase.GetCurrentMethod().Name))
