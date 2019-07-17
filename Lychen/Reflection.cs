@@ -11,7 +11,7 @@ namespace Lychen
 {
     public static class Reflection
     {
-        public static Assembly AssemblyByName(string symbol)
+        public static Assembly GetAssemblyByName(string symbol)
         {
             if (Program.Settings.ContainsKey("/" + MethodBase.GetCurrentMethod().Name))
             {
@@ -19,7 +19,7 @@ namespace Lychen
             }
             return Assembly.Load(symbol);
         }
-        public static Assembly AssemblyByPath(string path)
+        public static Assembly GetAssemblyByPath(string path)
         {
             if (Program.Settings.ContainsKey("/" + MethodBase.GetCurrentMethod().Name))
             {
