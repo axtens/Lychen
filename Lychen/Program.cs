@@ -34,9 +34,11 @@ namespace Lychen
                 {
                     if (Settings["/V8DEBUG"].ToString() != "MANUAL")
                     {
-                        var proc = new System.Diagnostics.Process();
-                        proc.StartInfo.FileName = "chrome://inspect";
-                        proc.Start();
+                        var psi = new System.Diagnostics.ProcessStartInfo("chrome.exe", "\"chrome://inspect/#devices\"")
+                        {
+                            CreateNoWindow = true
+                        };
+                        System.Diagnostics.Process.Start(psi);
                     }
                 }
             }
