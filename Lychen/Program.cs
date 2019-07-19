@@ -11,6 +11,7 @@ using System.Data;
 using RestSharp;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
+using System.Diagnostics;
 
 namespace Lychen
 {
@@ -32,9 +33,11 @@ namespace Lychen
                 v8ScriptEngineFlags |= V8ScriptEngineFlags.AwaitDebuggerAndPauseOnStart;
                 if (Settings.ContainsKey("/V8DEBUG"))
                 {
-                    if (Settings["/V8DEBUG"].ToString() != "MANUAL")
+                    if (Settings["/V8DEBUG"].ToString() != "")
                     {
-                        var psi = new System.Diagnostics.ProcessStartInfo("chrome.exe", "\"chrome://inspect/#devices\"")
+                        var psi = new ProcessStartInfo(
+                            $"{Settings["/V8DEBUG"]}.exe",
+                            $"{Settings["/V8DEBUG"]}\"://inspect/#devices\"")
                         {
                             CreateNoWindow = true
                         };
