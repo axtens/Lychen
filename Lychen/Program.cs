@@ -30,7 +30,7 @@ namespace Lychen
             if (Settings.ContainsKey("/V8DEBUG"))
             {
                 v8ScriptEngineFlags |= V8ScriptEngineFlags.AwaitDebuggerAndPauseOnStart;
-                if (Settings.ContainsKey("/V8DEBUG") && Settings["/V8DEBUG"].GetType() == typeof(string))
+                if (Settings.ContainsKey("/V8DEBUG"))
                 {
                     if (Settings["/V8DEBUG"].ToString() != "MANUAL")
                     {
