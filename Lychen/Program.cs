@@ -9,25 +9,36 @@ using Microsoft.ClearScript;
 using Microsoft.ClearScript.V8;
 using System.Data;
 using RestSharp;
+using OpenQA.Selenium;
+using OpenQA.Selenium.Chrome;
 
 namespace Lychen
 {
     static class Program
     {
-        public static V8ScriptEngine v8 = null;
+        public static V8ScriptEngine v8;
         public static Dictionary<string, object> Settings = new Dictionary<string, object>();
 
         static int Main(string[] args)
         {
             LoadSettingsDictionary(args);
 
-            var V8Setup = V8ScriptEngineFlags.EnableDebugging |
-                V8ScriptEngineFlags.EnableRemoteDebugging |
-                V8ScriptEngineFlags.DisableGlobalMembers;
+            var v8ScriptEngineFlags = V8ScriptEngineFlags.EnableDebugging
+                | V8ScriptEngineFlags.EnableRemoteDebugging
+                | V8ScriptEngineFlags.DisableGlobalMembers;
 
             if (Settings.ContainsKey("/V8DEBUG"))
             {
-                V8Setup |= V8ScriptEngineFlags.AwaitDebuggerAndPauseOnStart;
+                v8ScriptEngineFlags |= V8ScriptEngineFlags.AwaitDebuggerAndPauseOnStart;
+                if (Settings.ContainsKey("/V8DEBUG") && Settings["/V8DEBUG"].GetType() == typeof(string))
+                {
+                    if (Settings["/V8DEBUG"].ToString() != "MANUAL")
+                    {
+                        var proc = new System.Diagnostics.Process();
+                        proc.StartInfo.FileName = "chrome://inspect";
+                        proc.Start();
+                    }
+                }
             }
 
             if (Settings.ContainsKey("/DEBUG") && Settings["/DEBUG"].GetType() == typeof(bool))
@@ -35,7 +46,7 @@ namespace Lychen
                 System.Diagnostics.Debugger.Launch();
             }
 
-            v8 = new V8ScriptEngine(V8Setup, 9229);
+            v8 = new V8ScriptEngine(v8ScriptEngineFlags, 9229);
 
             AddSymbols();
 
@@ -84,8 +95,7 @@ namespace Lychen
                 }
                 catch (Exception exception)
                 {
-                    var scriptException = exception as IScriptEngineException;
-                    if (scriptException != null)
+                    if (exception is IScriptEngineException scriptException)
                     {
                         Console.WriteLine(scriptException.ErrorDetails);
                     }
@@ -106,8 +116,7 @@ namespace Lychen
 
         private static void RunREPL(string fileName)
         {
-            object evaluand = null;
-            var cmd = string.Empty;
+            string cmd;
             do
             {
                 Console.Write(Settings["$PROMPT"]);
@@ -121,6 +130,7 @@ namespace Lychen
                     File.AppendAllText(fileName, cmd + "\r\n");
                 }
 
+                object evaluand;
                 try
                 {
                     evaluand = v8.Evaluate(cmd);
@@ -215,7 +225,7 @@ namespace Lychen
                 else
                 {
                     Settings[$"$ARG{cnt}"] = arg;
-                    cnt += 1;
+                    cnt++;
                     argv.Add(arg);
                 }
             }
@@ -262,7 +272,15 @@ namespace Lychen
                 "System",
                 "System.Core",
                 "System.Data",
-                "RestSharp"));
+                "RestSharp",
+                "WebDriver",
+                "WebDriver.Support",
+                "Google.Apis.Auth",
+                "Google.Apis.Auth.PlatformServices",
+                "Google.Apis.Core",
+                "Google.Apis",
+                "Google.Apis.PlatformServices"
+                ));
         }
     }
 }
