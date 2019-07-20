@@ -31,18 +31,15 @@ namespace Lychen
             if (Settings.ContainsKey("/V8DEBUG"))
             {
                 v8ScriptEngineFlags |= V8ScriptEngineFlags.AwaitDebuggerAndPauseOnStart;
-                if (Settings.ContainsKey("/V8DEBUG"))
+                if (Settings["/V8DEBUG"].ToString() != "")
                 {
-                    if (Settings["/V8DEBUG"].ToString() != "")
+                    var psi = new ProcessStartInfo(
+                        $"{Settings["/V8DEBUG"]}.exe",
+                        $"{Settings["/V8DEBUG"]}\"://inspect/#devices\"")
                     {
-                        var psi = new ProcessStartInfo(
-                            $"{Settings["/V8DEBUG"]}.exe",
-                            $"{Settings["/V8DEBUG"]}\"://inspect/#devices\"")
-                        {
-                            CreateNoWindow = true
-                        };
-                        System.Diagnostics.Process.Start(psi);
-                    }
+                        CreateNoWindow = true
+                    };
+                    System.Diagnostics.Process.Start(psi);
                 }
             }
 
