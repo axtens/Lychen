@@ -31,7 +31,7 @@ namespace Lychen
             if (Settings.ContainsKey("/V8DEBUG"))
             {
                 v8ScriptEngineFlags |= V8ScriptEngineFlags.AwaitDebuggerAndPauseOnStart;
-                if (Settings["/V8DEBUG"].ToString() != "")
+                if (Settings["/V8DEBUG"].GetType() != typeof(bool))
                 {
                     var psi = new ProcessStartInfo(
                         $"{Settings["/V8DEBUG"]}.exe",
