@@ -267,6 +267,7 @@ namespace Lychen
             v8.AddHostObject("CSSettings", Settings);
             v8.AddHostType("CSLychen", typeof(Program)); // Experimental. No idea if useful or dangerous.
             v8.AddHostType("CSReflection", typeof(Reflection));
+            v8.AddHostType("CSExtension", typeof(Lychen.Extension));
         }
 
         private static void AddSystemSymbols(ref V8ScriptEngine v8)
