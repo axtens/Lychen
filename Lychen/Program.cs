@@ -12,6 +12,7 @@ using RestSharp;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 using System.Diagnostics;
+using LiveCharts;
 
 namespace Lychen
 {
@@ -175,6 +176,21 @@ namespace Lychen
 
             v8.AddHostObject(obfusc, v8);
             var includeCode = @"
+            const console = {
+                log: function () {
+                  var format;
+                  const args = [].slice.call(arguments);
+                  if (args.length > 1) {
+                    format = args.shift();
+                    args.forEach(function (item) {
+                      format = format.replace('%s', item);
+                    });
+                  } else {
+                    format = args.length === 1 ? args[0] : '';
+                  }
+                  CS.System.Console.WriteLine(format);
+                }
+              };
             function include(fn) {
                 if (CSFile.Exists(fn)) {
                     $SYM$.Evaluate(CSFile.ReadAllText(fn));
@@ -277,11 +293,7 @@ namespace Lychen
                 "RestSharp",
                 "WebDriver",
                 "WebDriver.Support",
-                "Google.Apis.Auth",
-                "Google.Apis.Auth.PlatformServices",
-                "Google.Apis.Core",
-                "Google.Apis",
-                "Google.Apis.PlatformServices"
+                "LiveCharts"
                 ));
         }
     }
