@@ -12,7 +12,7 @@ using RestSharp;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 using System.Diagnostics;
-using LiveCharts;
+
 
 namespace Lychen
 {
@@ -293,8 +293,7 @@ namespace Lychen
                 "System.Data",
                 "RestSharp",
                 "WebDriver",
-                "WebDriver.Support",
-                "LiveCharts"
+                "WebDriver.Support"
                 ));
         }
     }
