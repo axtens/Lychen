@@ -100,6 +100,7 @@ namespace Lychen
                 {
                     if (exception is IScriptEngineException scriptException)
                     {
+                        Console.WriteLine(exception.Source);
                         Console.WriteLine(scriptException.ErrorDetails);
                     }
                 }
@@ -142,6 +143,7 @@ namespace Lychen
                 {
                     evaluand = "";
                     Console.WriteLine(see.ErrorDetails);
+                    Console.WriteLine(see.StackTrace);
                 }
                 catch (NullReferenceException nre)
                 {
@@ -262,11 +264,12 @@ namespace Lychen
 
         private static void AddInternalSymbols(ref V8ScriptEngine v8)
         {
+            v8.AddHostObject("V8", v8);
             v8.AddHostType("CSINI", typeof(INI));
             v8.AddHostType("CSKeyGenerator", typeof(KeyGenerator));
             v8.AddHostObject("CSSettings", Settings);
             v8.AddHostType("CSLychen", typeof(Program)); // Experimental. No idea if useful or dangerous.
-            v8.AddHostType("CSReflection", typeof(Reflection));
+            v8.AddHostType("CSReflection", typeof(Reflections));
             v8.AddHostType("CSExtension", typeof(Lychen.Extension));
         }
 
@@ -287,14 +290,29 @@ namespace Lychen
         {
             v8.AddHostObject("CSExtendedHost", new ExtendedHostFunctions());
             v8.AddHostObject("CSHost", new HostFunctions());
-            v8.AddHostObject("CS", new HostTypeCollection("mscorlib",
-                "System",
-                "System.Core",
-                "System.Data",
-                "RestSharp",
-                "WebDriver",
-                "WebDriver.Support"
-                ));
+            var htc = new HostTypeCollection();
+            foreach (var assembly in new string[] { "mscorlib", "System", "System.Core", "System.Data", "RestSharp", "WebDriver", "WebDriver.Support" })
+            {
+                htc.AddAssembly(assembly);
+            }
+            if (Settings.ContainsKey("/ASSEMBLIES"))
+            {
+                var assemblies = Settings["/ASSEMBLIES"].ToString().Split(',');
+                foreach (var assembly  in assemblies)
+                {
+                    System.Reflection.Assembly assem;
+                    try
+                    {
+                        assem = System.Reflection.Assembly.LoadFrom(assembly);
+                        htc.AddAssembly(assem);
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(e.Message);
+                    }
+                }
+            }
+            v8.AddHostObject("CS", htc);
         }
     }
 }

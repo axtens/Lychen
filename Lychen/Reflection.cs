@@ -9,7 +9,7 @@ using System.Runtime.Remoting;
 
 namespace Lychen
 {
-    public static class Reflection
+    public static class Reflections
     {
         public static Assembly GetAssemblyByName(string symbol)
         {
