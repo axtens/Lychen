@@ -23,6 +23,9 @@ namespace Lychen
 
         static int Main(string[] args)
         {
+            Settings["$EXEPATH"] = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+            Settings["$CURPATH"] = System.IO.Directory.GetCurrentDirectory();
+
             LoadSettingsDictionary(args);
 
             var v8ScriptEngineFlags = V8ScriptEngineFlags.EnableDebugging
@@ -218,8 +221,17 @@ namespace Lychen
 
         private static void ConnectoToScriptINI(string script)
         {
-            var ini = new INI(Path.ChangeExtension(script, ".INI"));
-            v8.AddHostObject("CSScriptINI", ini);
+            var iniName = Path.ChangeExtension(script, ".INI");
+            var iniPath = Path.Combine(Settings["$EXEPATH"].ToString(), iniName);
+            if (File.Exists(iniPath))
+            {
+                v8.AddHostObject("CSScriptINI", new INI(iniPath));
+            }
+            else
+            {
+                iniPath = Path.Combine(Settings["$CURPATH"].ToString(), iniName);
+                v8.AddHostObject("CSScriptINI", new INI(iniPath));
+            }
         }
 
         private static void LoadSettingsDictionary(string[] args)
@@ -252,7 +264,7 @@ namespace Lychen
             Settings["$ARGC"] = cnt;
             Settings["$ARGV"] = argv.ToArray<string>();
             Settings["/COUNT"] = slashCnt;
-            Settings["$PROMPT"] = "Lychen>";
+            Settings["$PROMPT"] = "Lychen> ";
         }
 
         private static void AddSymbols()
@@ -295,6 +307,7 @@ namespace Lychen
             {
                 htc.AddAssembly(assembly);
             }
+
             if (Settings.ContainsKey("/ASSEMBLIES"))
             {
                 var assemblies = Settings["/ASSEMBLIES"].ToString().Split(',');
@@ -309,6 +322,44 @@ namespace Lychen
                     catch (Exception e)
                     {
                         Console.WriteLine(e.Message);
+                    }
+                }
+            }
+
+            var globalSettingsFile = Path.Combine(Settings["$EXEPATH"].ToString(), "Lychen.assemblies");
+            if (File.Exists(globalSettingsFile))
+            {
+                foreach (var assembly in File.ReadAllLines(globalSettingsFile))
+                {
+                    System.Reflection.Assembly assem;
+                    try
+                    {
+                        assem = System.Reflection.Assembly.LoadFrom(assembly);
+                        htc.AddAssembly(assem);
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(e.Message);
+                    }
+                }
+            } 
+            else
+            {
+                var localSettingsFile = Path.Combine(Settings["$CURPATH"].ToString(), "Lychen.assemblies");
+                if (File.Exists(globalSettingsFile))
+                {
+                    foreach (var assembly in File.ReadAllLines(localSettingsFile))
+                    {
+                        System.Reflection.Assembly assem;
+                        try
+                        {
+                            assem = System.Reflection.Assembly.LoadFrom(assembly);
+                            htc.AddAssembly(assem);
+                        }
+                        catch (Exception e)
+                        {
+                            Console.WriteLine(e.Message);
+                        }
                     }
                 }
             }
