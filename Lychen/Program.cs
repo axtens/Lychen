@@ -15,11 +15,11 @@ namespace Lychen
     {
         public static V8ScriptEngine v8;
         public static Dictionary<string, object> Settings = new Dictionary<string, object>();
-
+        public static string logFile;
         // behaviour change: if no file, run repl.
         static int Main(string[] args)
         {
-            SetupLogging();
+            logFile = SetupLogging();
             Settings["$EXEPATH"] = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
             Settings["$CURPATH"] = System.IO.Directory.GetCurrentDirectory();
 
@@ -81,11 +81,11 @@ namespace Lychen
             {
                 RunREPL(replLogFile);
             }
-
+            Console.WriteLine("NLog output in {0}", logFile);
             return 0;
         }
 
-        private static void SetupLogging()
+        private static string SetupLogging()
         {
             // Step 1. Create configuration object 
             var config = new LoggingConfiguration();
@@ -99,7 +99,8 @@ namespace Lychen
 
             // Step 3. Set target properties 
             //consoleTarget.Layout = @"${date:format=HH\:mm\:ss} ${logger} ${message}";
-            fileTarget.FileName = @"C:\Logs\logs.txt";
+            var logFile = Path.GetTempFileName();
+            fileTarget.FileName = logFile;
             fileTarget.Layout = @"${date:format=HH\:mm\:ss} ${logger} ${message}";
             // Step 4. Define rules
             //var rule1 = new LoggingRule("*", LogLevel.Debug, consoleTarget);
@@ -110,7 +111,7 @@ namespace Lychen
 
             // Step 5. Activate the configuration
             LogManager.Configuration = config;
-
+            return logFile;
         }
 
         private static void ExecuteScript(string script)
@@ -192,50 +193,6 @@ namespace Lychen
 
             } while (cmd != "bye");
         }
-
-        // private static void SetupIncludeFunction()
-        // {
-        //     var obfusc = "CS" + KeyGenerator.GetUniqueKey(36);
-        // 
-        //     v8.AddHostObject(obfusc, v8);
-        //     var includeCode = @"
-        //     const console = {
-        //         log: function () {
-        //           var format;
-        //           const args = [].slice.call(arguments);
-        //           if (args.length > 1) {
-        //             format = args.shift();
-        //             args.forEach(function (item) {
-        //               format = format.replace('%s', item);
-        //             });
-        //           } else {
-        //             format = args.length === 1 ? args[0] : '';
-        //           }
-        //           CS.System.Console.WriteLine(format);
-        //         }
-        //       };
-        //     function include(fn) {
-        //         if (CSFile.Exists(fn)) {
-        //             $SYM$.Evaluate(CSFile.ReadAllText(fn));
-        //         } else {
-        //             throw fn + ' not found.';
-        //         }
-        //     }
-        //     function include_once(fn) {
-        //         if (CSFile.Exists(fn)) {
-        //             if (!CSSettings.ContainsKey('included_' + fn)) {
-        //                 $SYM$.Evaluate(CSFile.ReadAllText(fn));
-        //                 CSSettings.Add('included_' + fn, true);
-        //             } else {
-        //                 throw fn + ' already included.';
-        //             }
-        //         } else {
-        //             throw fn + ' not found.';
-        //         }
-        //     }".Replace("$SYM$", obfusc);
-        // 
-        //     v8.Evaluate(includeCode);
-        // }
 
         private static void ConnectoToScriptINI(string script)
         {
