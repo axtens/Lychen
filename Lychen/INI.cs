@@ -1,3 +1,4 @@
+using NLog;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -9,6 +10,8 @@ namespace Lychen
     /// </summary>
     public class INI
     {
+        private static Logger logger = LogManager.GetCurrentClassLogger();
+
         public string path;
 
         [DllImport("kernel32")]

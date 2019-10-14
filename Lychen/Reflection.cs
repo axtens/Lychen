@@ -6,11 +6,13 @@ using System.Threading.Tasks;
 using System.Reflection;
 using System.Diagnostics;
 using System.Runtime.Remoting;
+using NLog;
 
 namespace Lychen
 {
     public static class Reflections
     {
+        private static Logger logger = LogManager.GetCurrentClassLogger(); 
         public static Assembly GetAssemblyByName(string symbol)
         {
             if (Program.Settings.ContainsKey("/" + MethodBase.GetCurrentMethod().Name))

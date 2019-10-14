@@ -1,4 +1,5 @@
-﻿using System.Security.Cryptography;
+﻿using NLog;
+using System.Security.Cryptography;
 using System.Text;
 
 // https://stackoverflow.com/questions/1344221/how-can-i-generate-random-alphanumeric-strings
@@ -7,6 +8,7 @@ namespace Lychen
 {
     public static class KeyGenerator
     {
+        private static Logger logger = LogManager.GetCurrentClassLogger(); 
         public static string GetUniqueKey(int size)
         {
             char[] chars =

@@ -1,28 +1,25 @@
-﻿using System;
-using System.IO;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.ClearScript.JavaScript;
-using Microsoft.ClearScript;
+﻿using Microsoft.ClearScript;
 using Microsoft.ClearScript.V8;
-using System.Data;
-using RestSharp;
-using OpenQA.Selenium;
-using OpenQA.Selenium.Chrome;
+using NLog;
+using NLog.Config;
+using NLog.Targets;
+using System;
+using System.Collections.Generic;
 using System.Diagnostics;
-
-
+using System.IO;
+using System.Linq;
+using System.Reflection;
 namespace Lychen
 {
-    static class Program
+    static partial class Program
     {
         public static V8ScriptEngine v8;
         public static Dictionary<string, object> Settings = new Dictionary<string, object>();
 
+        // behaviour change: if no file, run repl.
         static int Main(string[] args)
         {
+            SetupLogging();
             Settings["$EXEPATH"] = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
             Settings["$CURPATH"] = System.IO.Directory.GetCurrentDirectory();
 
@@ -32,14 +29,14 @@ namespace Lychen
                 | V8ScriptEngineFlags.EnableRemoteDebugging
                 | V8ScriptEngineFlags.DisableGlobalMembers;
 
-            if (Settings.ContainsKey("/V8DEBUG"))
+            if (Settings.ContainsKey("/DEBUG"))
             {
                 v8ScriptEngineFlags |= V8ScriptEngineFlags.AwaitDebuggerAndPauseOnStart;
-                if (Settings["/V8DEBUG"].GetType() != typeof(bool))
+                if (Settings["/DEBUG"].GetType() != typeof(bool))
                 {
                     var psi = new ProcessStartInfo(
-                        $"{Settings["/V8DEBUG"]}.exe",
-                        $"{Settings["/V8DEBUG"]}\"://inspect/#devices\"")
+                        $"{Settings["/DEBUG"]}.exe",
+                        $"{Settings["/DEBUG"]}\"://inspect/#devices\"")
                     {
                         CreateNoWindow = true
                     };
@@ -47,7 +44,7 @@ namespace Lychen
                 }
             }
 
-            if (Settings.ContainsKey("/DEBUG") && Settings["/DEBUG"].GetType() == typeof(bool))
+            if (Settings.ContainsKey("/EXEDEBUG") && Settings["/EXEDEBUG"].GetType() == typeof(bool))
             {
                 System.Diagnostics.Debugger.Launch();
             }
@@ -57,16 +54,18 @@ namespace Lychen
             AddSymbols();
 
             string script = string.Empty;
-            string replFile = string.Empty;
+            string replLogFile = Path.GetTempFileName();
 
-            var hasRepl = Settings.ContainsKey("/REPL");
-            if (hasRepl)
+            var hasReplLog = Settings.ContainsKey("/LOG");
+            if (hasReplLog)
             {
-                if (Settings["/REPL"].GetType() != typeof(bool))
+                if (Settings["/LOG"].GetType() != typeof(bool))
                 {
-                    replFile = Settings["/REPL"].ToString();
+                    replLogFile = Settings["/LOG"].ToString();
                 }
             }
+
+            ConnectoToScriptINI(script);
 
             if ((int)Settings["$ARGC"] > 0)
             {
@@ -76,20 +75,46 @@ namespace Lychen
                     Console.WriteLine($"Script {script} not found.");
                     return 2;
                 }
-                ConnectoToScriptINI(script);
+                ExecuteScript(script);
             }
             else
             {
-                if (!hasRepl)
-                {
-                    Console.WriteLine("No script.");
-                    return 1;
-                }
-                ConnectoToScriptINI("repl.INI"); // FIXME. Put this somewhere useful
+                RunREPL(replLogFile);
             }
 
-            SetupIncludeFunction();
+            return 0;
+        }
 
+        private static void SetupLogging()
+        {
+            // Step 1. Create configuration object 
+            var config = new LoggingConfiguration();
+
+            // Step 2. Create targets and add them to the configuration 
+            //var consoleTarget = new ColoredConsoleTarget();
+            //config.AddTarget("console", consoleTarget);
+
+            var fileTarget = new FileTarget();
+            config.AddTarget("file", fileTarget);
+
+            // Step 3. Set target properties 
+            //consoleTarget.Layout = @"${date:format=HH\:mm\:ss} ${logger} ${message}";
+            fileTarget.FileName = @"C:\Logs\logs.txt";
+            fileTarget.Layout = @"${date:format=HH\:mm\:ss} ${logger} ${message}";
+            // Step 4. Define rules
+            //var rule1 = new LoggingRule("*", LogLevel.Debug, consoleTarget);
+            //config.LoggingRules.Add(rule1);
+
+            var rule2 = new LoggingRule("*", LogLevel.Debug, fileTarget);
+            config.LoggingRules.Add(rule2);
+
+            // Step 5. Activate the configuration
+            LogManager.Configuration = config;
+
+        }
+
+        private static void ExecuteScript(string script)
+        {
             object evaluand = null;
 
             if (script != string.Empty)
@@ -112,13 +137,6 @@ namespace Lychen
                     Console.WriteLine($"{evaluand}");
                 }
             }
-
-            if (hasRepl)
-            {
-                RunREPL(replFile);
-            }
-
-            return 0;
         }
 
         private static void RunREPL(string fileName)
@@ -175,49 +193,49 @@ namespace Lychen
             } while (cmd != "bye");
         }
 
-        private static void SetupIncludeFunction()
-        {
-            var obfusc = "CS" + KeyGenerator.GetUniqueKey(36);
-
-            v8.AddHostObject(obfusc, v8);
-            var includeCode = @"
-            const console = {
-                log: function () {
-                  var format;
-                  const args = [].slice.call(arguments);
-                  if (args.length > 1) {
-                    format = args.shift();
-                    args.forEach(function (item) {
-                      format = format.replace('%s', item);
-                    });
-                  } else {
-                    format = args.length === 1 ? args[0] : '';
-                  }
-                  CS.System.Console.WriteLine(format);
-                }
-              };
-            function include(fn) {
-                if (CSFile.Exists(fn)) {
-                    $SYM$.Evaluate(CSFile.ReadAllText(fn));
-                } else {
-                    throw fn + ' not found.';
-                }
-            }
-            function include_once(fn) {
-                if (CSFile.Exists(fn)) {
-                    if (!CSSettings.ContainsKey('included_' + fn)) {
-                        $SYM$.Evaluate(CSFile.ReadAllText(fn));
-                        CSSettings.Add('included_' + fn, true);
-                    } else {
-                        throw fn + ' already included.';
-                    }
-                } else {
-                    throw fn + ' not found.';
-                }
-            }".Replace("$SYM$", obfusc);
-
-            v8.Evaluate(includeCode);
-        }
+        // private static void SetupIncludeFunction()
+        // {
+        //     var obfusc = "CS" + KeyGenerator.GetUniqueKey(36);
+        // 
+        //     v8.AddHostObject(obfusc, v8);
+        //     var includeCode = @"
+        //     const console = {
+        //         log: function () {
+        //           var format;
+        //           const args = [].slice.call(arguments);
+        //           if (args.length > 1) {
+        //             format = args.shift();
+        //             args.forEach(function (item) {
+        //               format = format.replace('%s', item);
+        //             });
+        //           } else {
+        //             format = args.length === 1 ? args[0] : '';
+        //           }
+        //           CS.System.Console.WriteLine(format);
+        //         }
+        //       };
+        //     function include(fn) {
+        //         if (CSFile.Exists(fn)) {
+        //             $SYM$.Evaluate(CSFile.ReadAllText(fn));
+        //         } else {
+        //             throw fn + ' not found.';
+        //         }
+        //     }
+        //     function include_once(fn) {
+        //         if (CSFile.Exists(fn)) {
+        //             if (!CSSettings.ContainsKey('included_' + fn)) {
+        //                 $SYM$.Evaluate(CSFile.ReadAllText(fn));
+        //                 CSSettings.Add('included_' + fn, true);
+        //             } else {
+        //                 throw fn + ' already included.';
+        //             }
+        //         } else {
+        //             throw fn + ' not found.';
+        //         }
+        //     }".Replace("$SYM$", obfusc);
+        // 
+        //     v8.Evaluate(includeCode);
+        // }
 
         private static void ConnectoToScriptINI(string script)
         {
@@ -272,6 +290,7 @@ namespace Lychen
             AddInternalSymbols(ref v8);
             AddHostSymbols(ref v8);
             AddSystemSymbols(ref v8);
+            ProcessLocalAssemblyLists();
         }
 
         private static void AddInternalSymbols(ref V8ScriptEngine v8)
@@ -300,6 +319,14 @@ namespace Lychen
 
         private static void AddHostSymbols(ref V8ScriptEngine v8)
         {
+            v8.Script.print = (Action<object>)Console.WriteLine;
+            v8.Script.exit = (Action<int>)Environment.Exit;
+            v8.Script.attach = (Action<string, string>)Attach;
+            v8.Script.attach2 = (Action<string, string>)Attach2;
+            v8.Script.glob = (Func<string, string[]>)Glob;
+            v8.Script.include = (Func<string, Status>)Include;
+            v8.Script.readline = (Func<string>)Console.ReadLine;
+
             v8.AddHostObject("CSExtendedHost", new ExtendedHostFunctions());
             v8.AddHostObject("CSHost", new HostFunctions());
             var htc = new HostTypeCollection();
@@ -311,7 +338,7 @@ namespace Lychen
             if (Settings.ContainsKey("/ASSEMBLIES"))
             {
                 var assemblies = Settings["/ASSEMBLIES"].ToString().Split(',');
-                foreach (var assembly  in assemblies)
+                foreach (var assembly in assemblies)
                 {
                     System.Reflection.Assembly assem;
                     try
@@ -339,10 +366,10 @@ namespace Lychen
                     }
                     catch (Exception e)
                     {
-                        Console.WriteLine(e.Message);
+                        Console.WriteLine("{0}: {1}", assembly, e.Message);
                     }
                 }
-            } 
+            }
             else
             {
                 var localSettingsFile = Path.Combine(Settings["$CURPATH"].ToString(), "Lychen.assemblies");
@@ -358,7 +385,7 @@ namespace Lychen
                         }
                         catch (Exception e)
                         {
-                            Console.WriteLine(e.Message);
+                            Console.WriteLine("{0}: {1}", assembly, e.Message);
                         }
                     }
                 }

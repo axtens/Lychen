@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NLog;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -13,6 +14,8 @@ namespace Lychen
     }
     public static class Extension
     {
+        private static Logger logger = LogManager.GetCurrentClassLogger();
+
         public static string GetTypeString(object thing) => thing == null ? "null" : thing.GetType().ToString();
         public static System.Type GetType(object thing) => thing.GetType();
 
