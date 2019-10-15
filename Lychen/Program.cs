@@ -81,7 +81,7 @@ namespace Lychen
             {
                 RunREPL(replLogFile);
             }
-            Console.WriteLine("NLog output in {0}", logFile);
+            Console.Error.WriteLine("NLog output in {0}", logFile);
             return 0;
         }
 

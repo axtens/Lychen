@@ -79,7 +79,7 @@ namespace Lychen
 
             foreach (var assemblyList in assemblyLists)
             {
-                Console.Error.Write($"Loading assembly from {assemblyList} ... ");
+                //Console.Error.Write($"Loading assembly from {assemblyList} ... ");
                 var symbol = Path.GetFileNameWithoutExtension(assemblyList);
                 var assemblyLines = File.ReadAllLines(assemblyList);
                 var packagesLocation = assemblyLines.First();
@@ -137,7 +137,8 @@ namespace Lychen
             }
             AddHostObject(ref v8, name, htc);
             logger.Error($"{htc.Count()} symbol{(htc.Count() == 1 ? "" : "s")} added to {name}");
-            Console.WriteLine($"{htc.Count()} symbol{(htc.Count() == 1 ? "" : "s")} added to {name}");
+
+            Console.Error.WriteLine($"{htc.Count()} symbol{(htc.Count() == 1 ? "" : "s")} added to {name}");
         }
 
         private static bool ContainsAssemblyAtDepthAndEarlier(List<Tuple<Assembly, int>> ltai, Assembly asm, int depth)

@@ -66,7 +66,7 @@ namespace Lychen
                 }
 
                 v8.AddHostObject(name, htc); //FIXME checkout the hosttypes
-                Console.WriteLine($"Attached {name}");
+                Console.Error.WriteLine($"Attached {name}");
             }
             catch (ReflectionTypeLoadException rtle)
             {
