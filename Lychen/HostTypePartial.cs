@@ -1,14 +1,11 @@
 ﻿using Microsoft.ClearScript;
 using Microsoft.ClearScript.V8;
-using Microsoft.ClearScript.Windows;
-using NLog;
+
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Lychen
 {
@@ -206,6 +203,9 @@ namespace Lychen
                     if (dll.ToUpperInvariant().Contains("LIB\\NET45")) return dll;
                     if (dll.ToUpperInvariant().Contains("LIB\\NETSTANDARD2.1")) return dll;
                     if (dll.ToUpperInvariant().Contains("LIB\\NETSTANDARD2.0")) return dll;
+                    //if (dll.ToUpperInvariant().Contains("X86")) return dll;
+                    //if (dll.ToUpperInvariant().Contains("X64")) return dll;
+
                 }
             }
             return null;
