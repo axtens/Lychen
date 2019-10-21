@@ -125,13 +125,21 @@ namespace Lychen
                 {
                     evaluand = v8.Evaluate(context);
                 }
-                catch (Exception exception)
+                catch (ScriptEngineException see)
                 {
-                    if (exception is IScriptEngineException scriptException)
-                    {
-                        Console.WriteLine(exception.Source);
-                        Console.WriteLine(scriptException.ErrorDetails);
-                    }
+                    evaluand = "";
+                    Console.WriteLine(see.ErrorDetails);
+                    Console.WriteLine(see.StackTrace);
+                }
+                catch (NullReferenceException nre)
+                {
+                    evaluand = "";
+                    Console.WriteLine(nre.Message);
+                }
+                catch (Exception e)
+                {
+                    evaluand = "";
+                    Console.WriteLine(e.Message);
                 }
                 if (evaluand.GetType() != typeof(Microsoft.ClearScript.VoidResult))
                 {
@@ -300,7 +308,8 @@ namespace Lychen
                     System.Reflection.Assembly assem;
                     try
                     {
-                        assem = System.Reflection.Assembly.LoadFrom(assembly);
+                        //assem = System.Reflection.Assembly.LoadFrom(assembly);
+                        assem = Assembly.Load(AssemblyName.GetAssemblyName(assembly));
                         htc.AddAssembly(assem);
                     }
                     catch (Exception e)
@@ -310,34 +319,36 @@ namespace Lychen
                 }
             }
 
-            var globalSettingsFile = Path.Combine(Settings["$EXEPATH"].ToString(), "Lychen.assemblies");
-            if (File.Exists(globalSettingsFile))
-            {
-                foreach (var assembly in File.ReadAllLines(globalSettingsFile))
-                {
-                    System.Reflection.Assembly assem;
-                    try
-                    {
-                        assem = System.Reflection.Assembly.LoadFrom(assembly);
-                        htc.AddAssembly(assem);
-                    }
-                    catch (Exception e)
-                    {
-                        Console.WriteLine("{0}: {1}", assembly, e.Message);
-                    }
-                }
-            }
-            else
-            {
+            //var globalSettingsFile = Path.Combine(Settings["$EXEPATH"].ToString(), "Lychen.assemblies");
+            //if (File.Exists(globalSettingsFile))
+            //{
+            //    foreach (var assembly in File.ReadAllLines(globalSettingsFile))
+            //    {
+            //        System.Reflection.Assembly assem;
+            //        try
+            //        {
+            //            //assem = System.Reflection.Assembly.LoadFrom(assembly);
+            //            assem = Assembly.Load(AssemblyName.GetAssemblyName(assembly));
+            //            htc.AddAssembly(assem);
+            //        }
+            //        catch (Exception e)
+            //        {
+            //            Console.WriteLine("{0}: {1}", assembly, e.Message);
+            //        }
+            //    }
+            //}
+            //else
+            //{
                 var localSettingsFile = Path.Combine(Settings["$CURPATH"].ToString(), "Lychen.assemblies");
-                if (File.Exists(globalSettingsFile))
+                if (File.Exists(localSettingsFile))
                 {
                     foreach (var assembly in File.ReadAllLines(localSettingsFile))
                     {
                         System.Reflection.Assembly assem;
                         try
                         {
-                            assem = System.Reflection.Assembly.LoadFrom(assembly);
+                            //assem = System.Reflection.Assembly.LoadFrom(assembly);
+                            assem = Assembly.Load(AssemblyName.GetAssemblyName(assembly));
                             htc.AddAssembly(assem);
                         }
                         catch (Exception e)
@@ -346,7 +357,7 @@ namespace Lychen
                         }
                     }
                 }
-            }
+            //}
             v8.AddHostObject("CS", htc);
         }
     }

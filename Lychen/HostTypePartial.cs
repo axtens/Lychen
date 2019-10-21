@@ -135,7 +135,8 @@ namespace Lychen
             AddHostObject(ref v8, name, htc);
             logger.Error($"{htc.Count()} symbol{(htc.Count() == 1 ? "" : "s")} added to {name}");
 
-            Console.Error.WriteLine($"{htc.Count()} symbol{(htc.Count() == 1 ? "" : "s")} added to {name}");
+            //Console.Error.WriteLine($"{htc.Count()} symbol{(htc.Count() == 1 ? "" : "s")} added to {name}");
+            Console.Error.WriteLine($"{name}[{htc.Count()}]");
         }
 
         private static bool ContainsAssemblyAtDepthAndEarlier(List<Tuple<Assembly, int>> ltai, Assembly asm, int depth)
@@ -201,6 +202,7 @@ namespace Lychen
                     if (dll.ToUpperInvariant().Contains("LIB\\NET47")) return dll;
                     if (dll.ToUpperInvariant().Contains("LIB\\NET46")) return dll;
                     if (dll.ToUpperInvariant().Contains("LIB\\NET45")) return dll;
+                    if (dll.ToUpperInvariant().Contains("LIB\\NET4")) return dll;
                     if (dll.ToUpperInvariant().Contains("LIB\\NETSTANDARD2.1")) return dll;
                     if (dll.ToUpperInvariant().Contains("LIB\\NETSTANDARD2.0")) return dll;
                     //if (dll.ToUpperInvariant().Contains("X86")) return dll;
