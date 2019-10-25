@@ -19,6 +19,8 @@ namespace Lychen
         public static Dictionary<string, object> Settings = new Dictionary<string, object>();
         public static string logFile;
         // behaviour change: if no file, run repl.
+
+        [STAThread]
         static int Main(string[] args)
         {
             logFile = SetupLogging();
