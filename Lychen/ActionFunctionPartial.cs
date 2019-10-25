@@ -66,26 +66,21 @@ namespace Lychen
                 }
 
                 v8.AddHostObject(name, htc); //FIXME checkout the hosttypes
-                Console.Error.WriteLine($"Attached {name}");
             }
             catch (ReflectionTypeLoadException rtle)
             {
                 foreach (var item in rtle.LoaderExceptions)
                 {
                     Console.WriteLine(item.Message);
-                    logger.Error(item.Message);
                 }
             }
             catch (FileNotFoundException fnfe)
             {
                 Console.WriteLine(fnfe.Message);
-                logger.Error(fnfe.Message);
-
             }
             catch (Exception e)
             {
                 Console.WriteLine(e.Message);
-                logger.Error(e.Message);
             }
         }
         private static void Attach(string obj) => Attach(obj, string.Empty);

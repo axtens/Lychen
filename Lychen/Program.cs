@@ -9,6 +9,8 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+
+
 namespace Lychen
 {
     static partial class Program
@@ -256,6 +258,7 @@ namespace Lychen
             AddHostSymbols(ref v8);
             AddSystemSymbols(ref v8);
             ProcessLocalAssemblyLists();
+            ProcessLocalAssemblyJsons();
         }
 
         private static void AddInternalSymbols(ref V8ScriptEngine v8)
@@ -339,24 +342,32 @@ namespace Lychen
             //}
             //else
             //{
-                var localSettingsFile = Path.Combine(Settings["$CURPATH"].ToString(), "Lychen.assemblies");
-                if (File.Exists(localSettingsFile))
+            var localSettingsFile = Path.Combine(Settings["$CURPATH"].ToString(), "Lychen.assemblies");
+            if (File.Exists(localSettingsFile))
+            {
+                foreach (var assembly in File.ReadAllLines(localSettingsFile))
                 {
-                    foreach (var assembly in File.ReadAllLines(localSettingsFile))
+                    System.Reflection.Assembly assem;
+                    try
                     {
-                        System.Reflection.Assembly assem;
-                        try
+                        //assem = System.Reflection.Assembly.LoadFrom(assembly);
+                        assem = Assembly.Load(AssemblyName.GetAssemblyName(assembly));
+                        htc.AddAssembly(assem);
+                    }
+                    catch (ReflectionTypeLoadException rtle)
+                    {
+                        foreach (var item in rtle.LoaderExceptions.Distinct())
                         {
-                            //assem = System.Reflection.Assembly.LoadFrom(assembly);
-                            assem = Assembly.Load(AssemblyName.GetAssemblyName(assembly));
-                            htc.AddAssembly(assem);
-                        }
-                        catch (Exception e)
-                        {
-                            Console.WriteLine("{0}: {1}", assembly, e.Message);
+                            logger.Error(item.Message);
+                            Console.WriteLine(item.Message);
                         }
                     }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine("{0}: {1}", assembly, e.Message);
+                    }
                 }
+            }
             //}
             v8.AddHostObject("CS", htc);
         }
