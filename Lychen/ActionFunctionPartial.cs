@@ -1,12 +1,8 @@
-﻿using Microsoft.ClearScript;
-using NLog;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.IO;
-using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
+using Microsoft.ClearScript;
+using NLog;
 
 namespace Lychen
 {
@@ -18,7 +14,7 @@ namespace Lychen
 
     public static partial class Program
     {
-        private static Logger logger = LogManager.GetCurrentClassLogger();
+        private static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
         private static void Attach2(string dllPath, string name = "")
         {
@@ -43,7 +39,6 @@ namespace Lychen
             {
                 Console.WriteLine(fnfe.Message);
                 logger.Error(fnfe.Message);
-
             }
             catch (Exception e)
             {
@@ -60,13 +55,9 @@ namespace Lychen
                 //var assem = System.Reflection.Assembly.LoadFrom(dllPath);
                 var assem = Assembly.Load(AssemblyName.GetAssemblyName(dllPath));
                 htc.AddAssembly(assem);
-                if (name.Length == 0)
-                {
-                    name = assem.FullName.Split(',')[0];
-                }
+                if (name.Length == 0) name = assem.FullName.Split(',')[0];
                 v8.AddHostObject(name, htc);
                 Console.WriteLine($"Attached {dllPath} as {name}");
-
             }
             catch (ReflectionTypeLoadException rtle)
             {
@@ -87,15 +78,16 @@ namespace Lychen
                 logger.Error(e.Message);
             }
         }
-        private static void Attach(string obj) => Attach(obj, string.Empty);
+
+        private static void Attach(string obj)
+        {
+            Attach(obj, string.Empty);
+        }
 
         private static string[] Glob(string wild)
         {
             var path = Path.GetDirectoryName(wild);
-            if (path.Length == 0)
-            {
-                path = ".\\";
-            }
+            if (path.Length == 0) path = ".\\";
             wild = Path.GetFileName(wild);
             return Directory.GetFiles(path, wild);
         }
@@ -103,7 +95,6 @@ namespace Lychen
         private static Status Include(string arg)
         {
             if (File.Exists(arg))
-            {
                 try
                 {
                     v8.Execute(File.ReadAllText(arg));
@@ -121,15 +112,12 @@ namespace Lychen
                         Error = see.Message
                     };
                 }
-            }
-            else
+
+            return new Status
             {
-                return new Status
-                {
-                    Error = arg + " not found.",
-                    Cargo = null
-                };
-            }
+                Error = arg + " not found.",
+                Cargo = null
+            };
         }
     }
 }

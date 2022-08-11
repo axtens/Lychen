@@ -1,35 +1,27 @@
-﻿using Microsoft.ClearScript;
-using Microsoft.ClearScript.V8;
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-
+using Microsoft.ClearScript;
+using Microsoft.ClearScript.V8;
 using Newtonsoft.Json;
 
 namespace Lychen
 {
     static partial class Program
     {
-        private static List<string> GatherDependencies = new List<string>();
+        private static readonly List<string> GatherDependencies = new List<string>();
 
         private static void AddHostType(ref V8ScriptEngineFlags v8, string v, Type type)
         {
-            if (Program.Settings.ContainsKey("/TRACE"))
-            {
-                logger.Error("AddHostType {0}", v);
-            }
+            if (Settings.ContainsKey("/TRACE")) logger.Error("AddHostType {0}", v);
             Program.v8.AddHostType(v, type);
         }
 
         private static void AddHostObject(ref V8ScriptEngine v8, string v, object obj)
         {
-            if (Program.Settings.ContainsKey("/TRACE"))
-            {
-                logger.Error("AddHostObject {0}", v);
-            }
+            if (Settings.ContainsKey("/TRACE")) logger.Error("AddHostObject {0}", v);
             Program.v8.AddHostObject(v, obj);
         }
 
@@ -39,10 +31,7 @@ namespace Lychen
 
             foreach (var assembly in usualCollection)
             {
-                if (Settings.ContainsKey("/TRACE"))
-                {
-                    logger.Error("AddHostAssembly {0}", assembly);
-                }
+                if (Settings.ContainsKey("/TRACE")) logger.Error("AddHostAssembly {0}", assembly);
                 htc.AddAssembly(assembly);
             }
 
@@ -65,13 +54,12 @@ namespace Lychen
 
             //if (las.Count > 0)
             //   AssignHostObjectFromListOfAssemblies(las, "ASSEMBLIES");
-
         }
 
         private static void ProcessLocalAssemblyLists()
         {
             GatherDependencies.Clear();
-            List<Tuple<Assembly, int>> las = new List<Tuple<Assembly, int>>();
+            var las = new List<Tuple<Assembly, int>>();
 
             var assemblyLists = Directory.GetFiles(".", "*.assemblylist");
             if (assemblyLists.Length == 0)
@@ -86,15 +74,12 @@ namespace Lychen
                 Settings["$PACKAGES"] = packagesLocation;
                 foreach (var assembly in assemblyLines.Skip(1))
                 {
-                    if (assembly.StartsWith("!"))
-                    {
-                        continue;
-                    }
+                    if (assembly.StartsWith("!")) continue;
 
                     Gather(assembly, ref las);
                 }
 
-                logger.Info(Newtonsoft.Json.JsonConvert.SerializeObject(las));
+                logger.Info(JsonConvert.SerializeObject(las));
 
                 if (las.Count > 0)
                 {
@@ -108,7 +93,7 @@ namespace Lychen
         {
             GatherDependencies.Clear();
 
-            List<Tuple<Assembly, int>> las = new List<Tuple<Assembly, int>>();
+            var las = new List<Tuple<Assembly, int>>();
 
             var assemblyJsons = Directory.GetFiles(".", "*.assemblyJson");
             if (assemblyJsons.Length == 0)
@@ -123,14 +108,13 @@ namespace Lychen
                 Settings["$PACKAGES"] = packagesLocation;
                 var flatDllList = json.Flat.Value;
                 var dllList = json.DllList;
-                foreach (var dll in dllList) {
+                foreach (var dll in dllList)
                     if (flatDllList)
                         Gather2(dll.Value, ref las);
                     else
                         Gather(dll, ref las);
-                }
 
-                logger.Info(Newtonsoft.Json.JsonConvert.SerializeObject(las));
+                logger.Info(JsonConvert.SerializeObject(las));
 
                 if (las.Count > 0)
                 {
@@ -140,9 +124,9 @@ namespace Lychen
             }
         }
 
-       private static void Gather2(string dll, ref List<Tuple<Assembly, int>> assemblies, int depth = 0)
+        private static void Gather2(string dll, ref List<Tuple<Assembly, int>> assemblies, int depth = 0)
         {
-            var dllInPackages = Path.Combine(Settings["$PACKAGES"].ToString(),dll);
+            var dllInPackages = Path.Combine(Settings["$PACKAGES"].ToString(), dll);
 
             if (File.Exists(dllInPackages))
             {
@@ -160,33 +144,28 @@ namespace Lychen
                 var dependencies = GetDependentDlls2(assem);
 
                 if (dependencies.Item1.Length > 0)
-                {
                     foreach (var dependency in dependencies.Item2)
                     {
                         Gather2(dependency, ref assemblies, depth + 1);
                         GatherDependencies.Add(dependency);
                     }
-                }
-
-
             }
             else
             {
                 logger.Error($"{dll} doesn't exist");
-
             }
         }
 
         private static Tuple<string[], string[]> GetDependentDlls2(Assembly assembly)
         {
-            AssemblyName[] asm = assembly.GetReferencedAssemblies();
+            var asm = assembly.GetReferencedAssemblies();
             var packagespaths = new List<string>();
             var virtualpaths = new List<string>();
 
-            for (int t = asm.Length - 1; t >= 0; t--)
+            for (var t = asm.Length - 1; t >= 0; t--)
             {
                 logger.Info($"Looking for {asm[t].FullName}");
-                string path = Path.GetFullPath(asm[t].Name + ".dll");
+                var path = Path.GetFullPath(asm[t].Name + ".dll");
 
                 var newpath = Path.Combine(Settings["$PACKAGES"].ToString(), path);
                 if (newpath == null)
@@ -218,10 +197,7 @@ namespace Lychen
                 }
                 catch (ReflectionTypeLoadException rtle)
                 {
-                    foreach (var item in rtle.LoaderExceptions.Distinct())
-                    {
-                        logger.Error(item.Message);
-                    }
+                    foreach (var item in rtle.LoaderExceptions.Distinct()) logger.Error(item.Message);
                 }
                 catch (InvalidOperationException ioe)
                 {
@@ -234,6 +210,7 @@ namespace Lychen
                     logger.Error(e.StackTrace);
                 }
             }
+
             AddHostObject(ref v8, name, htc);
             logger.Error($"{htc.Count()} symbol{(htc.Count() == 1 ? "" : "s")} added to {name}");
 
@@ -246,11 +223,9 @@ namespace Lychen
             for (var i = depth; i >= 0; i--)
             {
                 var matcher = new Tuple<Assembly, int>(asm, i);
-                if (ltai.Contains(matcher))
-                {
-                    return true;
-                }
+                if (ltai.Contains(matcher)) return true;
             }
+
             return false;
         }
 
@@ -274,20 +249,15 @@ namespace Lychen
                 var dependencies = GetDependentDlls(assem);
 
                 if (dependencies.Item1.Length > 0)
-                {
                     foreach (var dependency in dependencies.Item2)
                     {
                         Gather(dependency, ref assemblies, depth + 1);
                         GatherDependencies.Add(dependency);
                     }
-                }
-
-
             }
             else
             {
                 logger.Error($"{dllInPackages} doesn't exist");
-
             }
         }
 
@@ -309,23 +279,23 @@ namespace Lychen
                     if (dll.ToUpperInvariant().Contains("LIB\\NETSTANDARD2.0")) return dll;
                     //if (dll.ToUpperInvariant().Contains("X86")) return dll;
                     //if (dll.ToUpperInvariant().Contains("X64")) return dll;
-
                 }
             }
+
             return null;
         }
 
         private static Tuple<string[], string[]> GetDependentDlls(Assembly assembly)
         {
-            AssemblyName[] asm = assembly.GetReferencedAssemblies();
+            var asm = assembly.GetReferencedAssemblies();
             var packagespaths = new List<string>();
             var virtualpaths = new List<string>();
 
-            for (int t = asm.Length - 1; t >= 0; t--)
+            for (var t = asm.Length - 1; t >= 0; t--)
             {
                 logger.Info($"Looking for {asm[t].Name} version {asm[t].Version}");
 
-                string path = Path.GetFullPath(asm[t].Name + ".dll");
+                var path = Path.GetFullPath(asm[t].Name + ".dll");
 
                 var newpath = InPackages(path);
                 if (newpath == null)

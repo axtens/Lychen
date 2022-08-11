@@ -1,15 +1,14 @@
-﻿using Microsoft.ClearScript;
-using Microsoft.ClearScript.V8;
-using NLog;
-using NLog.Config;
-using NLog.Targets;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-
+using Microsoft.ClearScript;
+using Microsoft.ClearScript.V8;
+using NLog;
+using NLog.Config;
+using NLog.Targets;
 
 namespace Lychen
 {
@@ -17,21 +16,22 @@ namespace Lychen
     {
         public static V8ScriptEngine v8;
         public static Dictionary<string, object> Settings = new Dictionary<string, object>();
+
         public static string logFile;
         // behaviour change: if no file, run repl.
 
         [STAThread]
-        static int Main(string[] args)
+        private static int Main(string[] args)
         {
             logFile = SetupLogging();
-            Settings["$EXEPATH"] = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
-            Settings["$CURPATH"] = System.IO.Directory.GetCurrentDirectory();
+            Settings["$EXEPATH"] = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            Settings["$CURPATH"] = Directory.GetCurrentDirectory();
 
             LoadSettingsDictionary(args);
 
             var v8ScriptEngineFlags = V8ScriptEngineFlags.EnableDebugging
-                | V8ScriptEngineFlags.EnableRemoteDebugging
-                | V8ScriptEngineFlags.DisableGlobalMembers;
+                                      | V8ScriptEngineFlags.EnableRemoteDebugging
+                                      | V8ScriptEngineFlags.DisableGlobalMembers;
 
             if (Settings.ContainsKey("/DEBUG"))
             {
@@ -44,30 +44,23 @@ namespace Lychen
                     {
                         CreateNoWindow = true
                     };
-                    System.Diagnostics.Process.Start(psi);
+                    Process.Start(psi);
                 }
             }
 
-            if (Settings.ContainsKey("/EXEDEBUG") && Settings["/EXEDEBUG"].GetType() == typeof(bool))
-            {
-                System.Diagnostics.Debugger.Launch();
-            }
+            if (Settings.ContainsKey("/EXEDEBUG") && Settings["/EXEDEBUG"].GetType() == typeof(bool)) Debugger.Launch();
 
             v8 = new V8ScriptEngine(v8ScriptEngineFlags, 9229);
 
             AddSymbols();
 
-            string script = string.Empty;
-            string replLogFile = Path.GetTempFileName();
+            var script = string.Empty;
+            var replLogFile = Path.GetTempFileName();
 
             var hasReplLog = Settings.ContainsKey("/LOG");
             if (hasReplLog)
-            {
                 if (Settings["/LOG"].GetType() != typeof(bool))
-                {
                     replLogFile = Settings["/LOG"].ToString();
-                }
-            }
 
             ConnectoToScriptINI(script);
 
@@ -79,12 +72,14 @@ namespace Lychen
                     Console.WriteLine($"Script {script} not found.");
                     return 2;
                 }
+
                 ExecuteScript(script);
             }
             else
             {
                 RunREPL(replLogFile);
             }
+
             Console.Error.WriteLine("NLog output in {0}", logFile);
             return 0;
         }
@@ -145,10 +140,8 @@ namespace Lychen
                     evaluand = "";
                     Console.WriteLine(e.Message);
                 }
-                if (evaluand.GetType() != typeof(Microsoft.ClearScript.VoidResult))
-                {
-                    Console.WriteLine($"{evaluand}");
-                }
+
+                if (evaluand.GetType() != typeof(VoidResult)) Console.WriteLine($"{evaluand}");
             }
         }
 
@@ -159,14 +152,8 @@ namespace Lychen
             {
                 Console.Write(Settings["$PROMPT"]);
                 cmd = Console.ReadLine();
-                if (cmd == "bye")
-                {
-                    break;
-                }
-                if (fileName != string.Empty)
-                {
-                    File.AppendAllText(fileName, cmd + "\r\n");
-                }
+                if (cmd == "bye") break;
+                if (fileName != string.Empty) File.AppendAllText(fileName, cmd + "\r\n");
 
                 object evaluand;
                 try
@@ -189,20 +176,14 @@ namespace Lychen
                     evaluand = "";
                     Console.WriteLine(e.Message);
                 }
-                if (evaluand == null)
-                {
-                    evaluand = "(null)";
-                }
 
-                if (evaluand.GetType() != typeof(Microsoft.ClearScript.VoidResult))
+                if (evaluand == null) evaluand = "(null)";
+
+                if (evaluand.GetType() != typeof(VoidResult))
                 {
                     Console.WriteLine($"{evaluand}");
-                    if (fileName != string.Empty)
-                    {
-                        File.AppendAllText(fileName, $"// {evaluand}\r\n");
-                    }
+                    if (fileName != string.Empty) File.AppendAllText(fileName, $"// {evaluand}\r\n");
                 }
-
             } while (cmd != "bye");
         }
 
@@ -227,13 +208,12 @@ namespace Lychen
             var cnt = 0;
             var slashCnt = 0;
             foreach (var arg in args)
-            {
                 if (arg.StartsWith("/"))
                 {
                     slashCnt++;
                     if (arg.Contains(":") || arg.Contains("="))
                     {
-                        var lhs = arg.Split(new char[] { ':', '=' }, 2);
+                        var lhs = arg.Split(new[] { ':', '=' }, 2);
                         Settings[lhs[0]] = lhs[1];
                     }
                     else
@@ -247,7 +227,7 @@ namespace Lychen
                     cnt++;
                     argv.Add(arg);
                 }
-            }
+
             Settings["$ARGC"] = cnt;
             Settings["$ARGV"] = argv.ToArray<string>();
             Settings["/COUNT"] = slashCnt;
@@ -271,20 +251,20 @@ namespace Lychen
             v8.AddHostObject("CSSettings", Settings);
             v8.AddHostType("CSLychen", typeof(Program)); // Experimental. No idea if useful or dangerous.
             v8.AddHostType("CSReflection", typeof(Reflections));
-            v8.AddHostType("CSExtension", typeof(Lychen.Extension));
+            v8.AddHostType("CSExtension", typeof(Extension));
         }
 
         private static void AddSystemSymbols(ref V8ScriptEngine v8)
         {
-            v8.AddHostType("CSFile", typeof(System.IO.File));
-            v8.AddHostType("CSConsole", typeof(System.Console));
-            v8.AddHostType("CSPath", typeof(System.IO.Path));
-            v8.AddHostType("CSDirectory", typeof(System.IO.Directory));
-            v8.AddHostType("CSDirectoryInfo", typeof(System.IO.DirectoryInfo));
-            v8.AddHostType("CSEnvironment", typeof(System.Environment));
-            v8.AddHostType("CSString", typeof(System.String));
-            v8.AddHostType("CSDateTime", typeof(System.DateTime));
-            v8.AddHostType("CSDebugger", typeof(System.Diagnostics.Debugger));
+            v8.AddHostType("CSFile", typeof(File));
+            v8.AddHostType("CSConsole", typeof(Console));
+            v8.AddHostType("CSPath", typeof(Path));
+            v8.AddHostType("CSDirectory", typeof(Directory));
+            v8.AddHostType("CSDirectoryInfo", typeof(DirectoryInfo));
+            v8.AddHostType("CSEnvironment", typeof(Environment));
+            v8.AddHostType("CSString", typeof(string));
+            v8.AddHostType("CSDateTime", typeof(DateTime));
+            v8.AddHostType("CSDebugger", typeof(Debugger));
         }
 
         private static void AddHostSymbols(ref V8ScriptEngine v8)
@@ -300,17 +280,18 @@ namespace Lychen
             v8.AddHostObject("CSExtendedHost", new ExtendedHostFunctions());
             v8.AddHostObject("CSHost", new HostFunctions());
             var htc = new HostTypeCollection();
-            foreach (var assembly in new string[] { "mscorlib", "System", "System.Core", "System.Data", "RestSharp", "WebDriver", "WebDriver.Support" })
-            {
-                htc.AddAssembly(assembly);
-            }
+            foreach (var assembly in new[]
+                     {
+                         "mscorlib", "System", "System.Core", "System.Data", "RestSharp", "WebDriver",
+                         "WebDriver.Support"
+                     }) htc.AddAssembly(assembly);
 
             if (Settings.ContainsKey("/ASSEMBLIES"))
             {
                 var assemblies = Settings["/ASSEMBLIES"].ToString().Split(',');
                 foreach (var assembly in assemblies)
                 {
-                    System.Reflection.Assembly assem;
+                    Assembly assem;
                     try
                     {
                         //assem = System.Reflection.Assembly.LoadFrom(assembly);
@@ -346,10 +327,9 @@ namespace Lychen
             //{
             var localSettingsFile = Path.Combine(Settings["$CURPATH"].ToString(), "Lychen.assemblies");
             if (File.Exists(localSettingsFile))
-            {
                 foreach (var assembly in File.ReadAllLines(localSettingsFile))
                 {
-                    System.Reflection.Assembly assem;
+                    Assembly assem;
                     try
                     {
                         //assem = System.Reflection.Assembly.LoadFrom(assembly);
@@ -369,7 +349,7 @@ namespace Lychen
                         Console.WriteLine("{0}: {1}", assembly, e.Message);
                     }
                 }
-            }
+
             //}
             v8.AddHostObject("CS", htc);
         }
